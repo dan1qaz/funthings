@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>We've Tracked You!</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            color: white;
+            text-align: center;
+            font-family: Arial, sans-serif;
+            background-color: black;
+        }
+        .info-box {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+            z-index: 2;
+            display: none;
+        }
+        iframe {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+        }
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: black;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: red;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+    <div class="overlay" id="overlay" onclick="startVideo()">Click to start...</div>
+    
+    <iframe id="videoFrame" src="https://www.youtube.com/embed/DNlaGdUF1As?enablejsapi=1" frameborder="0" allow="autoplay" allowfullscreen></iframe>
+    
+    <div class="info-box" id="infoBox">
+        <h1>We've Tracked You!</h1>
+        <p><strong>Public IP Address:</strong> <span id="ip">Loading...</span></p>
+        <p><strong>Location:</strong> <span id="location">Loading...</span></p>
+        <p><strong>ZIP Code:</strong> <span id="zip">Loading...</span></p>
+        <p><strong>Latitude & Longitude:</strong> <span id="latlong">Loading...</span></p>
+        <p><strong>ISP:</strong> <span id="isp">Loading...</span></p>
+        <p><strong>Internet Type:</strong> <span id="internet">Loading...</span></p>
+        <p><strong>Time Zone:</strong> <span id="timezone">Loading...</span></p>
+        <p><strong>Region Code:</strong> <span id="region_code">Loading...</span></p>
+        <p><strong>Country Code:</strong> <span id="country_code">Loading...</span></p>
+        <p><strong>Continent:</strong> <span id="continent">Loading...</span></p>
+        <p><strong>Currency:</strong> <span id="currency">Loading...</span></p>
+        <p><strong>Calling Code:</strong> <span id="calling_code">Loading...</span></p>
+        <p><strong>ASN (ISP Network ID):</strong> <span id="asn">Loading...</span></p>
+    </div>
+    
+    <script>
+        function startVideo() {
+            document.getElementById("overlay").style.display = "none";
+            var iframe = document.getElementById("videoFrame");
+            iframe.src = "https://www.youtube.com/embed/DNlaGdUF1As?autoplay=1";
+            
+            setTimeout(() => {
+                fetch('https://ipapi.co/json/')
+                    .then(response => response.json())
+                    .then(data => {
+                        document.getElementById("ip").innerText = data.ip;
+                        document.getElementById("location").innerText = `${data.city}, ${data.region}, ${data.country_name}`;
+                        document.getElementById("zip").innerText = data.postal;
+                        document.getElementById("latlong").innerText = `${data.latitude}, ${data.longitude}`;
+                        document.getElementById("isp").innerText = data.org;
+                        document.getElementById("internet").innerText = data.network;
+                        document.getElementById("timezone").innerText = data.timezone;
+                        document.getElementById("region_code").innerText = data.region_code;
+                        document.getElementById("country_code").innerText = data.country_code;
+                        document.getElementById("continent").innerText = data.continent_code;
+                        document.getElementById("currency").innerText = data.currency;
+                        document.getElementById("calling_code").innerText = `+${data.country_calling_code}`;
+                        document.getElementById("asn").innerText = data.asn;
+                        document.getElementById("infoBox").style.display = "block";
+                    })
+                    .catch(() => {
+                        document.getElementById("infoBox").innerHTML = "<h1>Error loading data</h1>";
+                    });
+            }, 4000); // Show at 4 seconds
+        }
+    </script>
+</body>
+</html>
