@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>We've Tracked You!</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            color: white;
+            text-align: center;
+            font-family: Arial, sans-serif;
+            background: black;
+        }
+        .start-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 10;
+        }
+        .start-screen button {
+            font-size: 24px;
+            padding: 15px 30px;
+            border: none;
+            cursor: pointer;
+            background: black;
+            color: white;
+            border-radius: 5px;
+        }
+        video {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+            display: none;
+        }
+        .info-box {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+            display: none;
+        }
+        .hidden {
+            visibility: hidden;
+        }
+        #doxxed {
+            font-size: 22px;
+            margin-top: 20px;
+            color: red;
+            font-weight: bold;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="start-screen" id="startScreen">
+        <button onclick="startExperience()">CLICK TO START</button>
+    </div>
+
+    <video id="videoPlayer">
+        <source src="https://ia804505.us.archive.org/8/items/0224-2-online-video-cutter.com/0224%20%282%29%20%28online-video-cutter.com%29.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+
+    <div class="info-box" id="infoBox">
+        <h1>Hi, we've found you 😈</h1>
+        <p><strong>IP Address:</strong> <span id="ip" class="hidden">Loading...</span></p>
+        <p><strong>Location:</strong> <span id="location" class="hidden">Loading...</span></p>
+        <p><strong>ISP:</strong> <span id="isp" class="hidden">Loading...</span></p>
+        <p><strong>Region:</strong> <span id="region" class="hidden">Loading...</span></p>
+        <p><strong>Country:</strong> <span id="country" class="hidden">Loading...</span></p>
+        <p><strong>Time Zone:</strong> <span id="timezone" class="hidden">Loading...</span></p>
+        <p><strong>VPN Detected:</strong> <span id="vpn" class="hidden">Checking...</span></p>
+        <p><strong>Browser:</strong> <span id="browser" class="hidden"></span></p>
+        <p><strong>Device Type:</strong> <span id="device" class="hidden"></span></p>
+        <p><strong>Coordinates:</strong> <span id="coords" class="hidden">Loading...</span></p>
+        
+        <p id="doxxed">YOU JUST GOT DOXED!</p>
+    </div>
+
+    <script>
+        function startExperience() {
+            document.getElementById("startScreen").style.display = "none";
+            let video = document.getElementById("videoPlayer");
+            let infoBox = document.getElementById("infoBox");
+            video.style.display = "block";
+            video.play();
+
+            setTimeout(() => {
+                infoBox.style.display = "block";
+                fetchData();
+            }, 500);
+        }
+
+        function fetchData() {
+            fetch('https://ipwhois.app/json/')
+                .then(response => response.json())
+                .then(data => {
+                    let info = [
+                        { id: "ip", text: data.ip || "Unknown" },
+                        { id: "location", text: `${data.city}, ${data.region} (${data.country})` || "Unknown" },
+                        { id: "isp", text: data.isp || "Unknown" },
+                        { id: "region", text: data.region || "Unknown" },
+                        { id: "country", text: data.country || "Unknown" },
+                        { id: "timezone", text: data.timezone || "Unknown" },
+                        { id: "vpn", text: data.security ? (data.security.vpn ? "Yes" : "No") : "Unknown" },
+                        { id: "coords", text: data.latitude && data.longitude ? `${data.latitude}, ${data.longitude}` : "Unavailable" }
+                    ];
+
+                    info.push({ id: "browser", text: navigator.userAgent });
+                    info.push({ id: "device", text: /Mobi|Android/i.test(navigator.userAgent) ? "Mobile" : "Desktop" });
+
+                    info.forEach((item, index) => {
+                        setTimeout(() => {
+                            let element = document.getElementById(item.id);
+                            element.innerText = item.text;
+                            element.classList.remove("hidden");
+                        }, index * 500);
+                    });
+
+                    // Show "YOU JUST GOT DOXED!" after info loads
+                    setTimeout(() => {
+                        document.getElementById("doxxed").style.display = "block";
+                    }, (info.length + 2) * 500);
+                })
+                .catch(() => {
+                    let elements = ["ip", "location", "isp", "region", "country", "timezone", "vpn", "browser", "device", "coords"];
+                    elements.forEach((id, index) => {
+                        setTimeout(() => {
+                            let element = document.getElementById(id);
+                            element.innerText = "Could not fetch data";
+                            element.classList.remove("hidden");
+                        }, index * 500);
+                    });
+
+                    setTimeout(() => {
+                        document.getElementById("doxxed").style.display = "block";
+                    }, 5000);
+                });
+        }
+    </script>
+
+</body>
+</html>
